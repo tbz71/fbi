@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBI COMMANDER Portal | Access Center</title>
+    <!-- FontAwesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #070b12;
+            --panel-bg: #0f1626;
+            --accent-blue: #1e3a8a;
+            --neon-blue: #3b82f6;
+            --neon-glow: #00d2ff;
+            --text-light: #f3f4f6;
+            --text-muted: #9ca3af;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #111827 0%, #070b12 100%);
+        }
+
+        /* شاشة التحقق الفيدرالية */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-blue);
+            padding: 35px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.5rem;
+        }
+
+        .login-card .subtitle {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        .login-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .login-field label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .login-field input, .login-field select {
+            width: 100%;
+            padding: 12px;
+            background: #070b12;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            transition: border 0.3s;
+        }
+
+        .login-field input:focus, .login-field select:focus {
+            outline: none;
+            border-color: var(--neon-blue);
+        }
+
+        .login-card button {
+            background: linear-gradient(135deg, var(--accent-blue), var(--neon-blue));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+
+        .error-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            margin-top: 15px;
+            display: none;
+            text-align: center;
+        }
+
+        /* الهيدر والمحتوى الرئيسي */
+        header {
+            background: rgba(15, 22, 38, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-area i { font-size: 2.5rem; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-glow); }
+        .logo-text h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; }
+        .logo-text span { font-size: 0.8rem; color: var(--text-muted); display: block; }
+
+        .container {
+            max-width: 1600px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        @media (max-width: 1200px) { .container { grid-template-columns: 1fr; } }
+
+        .panel { background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
+        .panel-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
+        .panel-title i { color: var(--neon-blue); }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 0.85rem; color: var(--text-muted); }
+        .input-group input, .input-group select, .input-group textarea { background: rgba(7, 11, 18, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 5px; color: white; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { outline: none; border-color: var(--neon-blue); }
+
+        .btn-submit { background: var(--accent-blue); color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-submit-complaint { background: var(--danger); }
+
+        .search-bar { margin-bottom: 20px; position: relative; }
+        .search-bar input { width: 100%; padding: 12px 40px 12px 15px; background: rgba(7, 11, 18, 0.8); border: 1px solid rgba(59, 130, 246, 0.3); color: white; border-radius: 6px; }
+        .search-bar i { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); color: var(--text-muted); }
+        
+        .records-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+        .record-card { background: rgba(7, 11, 18, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-wanted { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+        .status-clean { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+
+        .ai-terminal { background: #050811; border: 1px solid #1e293b; border-radius: 6px; padding: 15px; height: 320px; display: flex; flex-direction: column; justify-content: space-between; }
+        .ai-output { flex-grow: 1; overflow-y: auto; font-size: 0.9rem; color: #38bdf8; margin-bottom: 10px; line-height: 1.6; }
+        .ai-input-zone { display: flex; gap: 10px; }
+        .ai-input-zone input { flex-grow: 1; background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 4px; }
+        .btn-ai { background: #0284c7; border: none; color: white; padding: 0 15px; border-radius: 4px; cursor: pointer; }
+
+        .scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%); z-index: 999; pointer-events: none; }
+        
+        /* تقسيم واجهة المستخدم بناء على الرتبة */
+        .officer-only { display: block; }
+        .citizen-only { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="scanline"></div>
+
+    <!-- شاشة التسجيل والتحقق الفيدرالي -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <i class="fa-solid fa-user-gear" style="font-size: 3.5rem; color: var(--neon-blue);"></i>
+            </div>
+            <h2>بوابة تصاريح الاستخبارات</h2>
+            <div class="subtitle">نظام المراقبة والتحري المركزي الفيدرالي الرئيسي</div>
+            
+            <div class="login-field">
+                <label>الاسم الثلاثي للاعب</label>
+                <input type="text" id="loginName" placeholder="مثال: خالد الهاشمي">
+            </div>
+
+            <div class="login-field">
+                <label>المنصب أو القطاع</label>
+                <input type="text" id="loginJob" placeholder="مثال: الـ CID / مكافحة الشغب">
+            </div>
+
+            <div class="login-field">
+                <label>الرتبة العسكرية / الحالة</label>
+                <select id="loginRank" onchange="toggleUnemployed(this.value)">
+                    <option value="موظف">عسكري / محقق (مسجل بالقطاع)</option>
+                    <option value="عاطل">عاطل عن العمل (مواطن عادي)</option>
+                </select>
+            </div>
+
+            <div class="login-field">
+                <label>اسم المسؤول المباشر عنك (مفتاح الدخول)</label>
+                <input type="text" id="loginManager" placeholder="اسم القائد أو المسؤول المصرح...">
+            </div>
+
+            <button onclick="validateRequest()">تقديم الطلب وفحص الصلاحية</button>
+            
+            <div class="error-box" id="errorBox">
+                ❌ <b>رفض أمني:</b> اسم المسؤول غير مدرج في الصلاحيات العليا، أو ليس لديه الصلاحية لإدخالك للنظام الفيدرالي.
+            </div>
+        </div>
+    </div>
+
+    <!-- الهيدر الرئيسي للموقع -->
+    <header>
+        <div class="logo-area">
+            <i class="fa-solid fa-shield-halved" id="mainIcon"></i>
+            <div class="logo-text">
+                <h1 id="mainTitle">FBI COMMANDER ACCESS</h1>
+                <span id="subTitle">INTERNAL DATABASE // COMMAND SECTOR TERMINAL</span>
+            </div>
+        </div>
+        <div class="user-status">
+            <span style="color: var(--success); font-weight: 600;" id="navUserBadge"><i class="fa-solid fa-user-shield"></i> المتصل: مستخدم جديد</span>
+        </div>
+    </header>
+
+    <!-- المحتوى بعد الدخول -->
+    <div class="container">
+        
+        <main style="display: flex; flex-direction: column; gap: 30px;">
+            
+            <!-- لوحة المحققين والأرشفة (تظهر للعساكر فقط) -->
+            <section class="panel officer-only" id="officerPanel">
+                <div class="panel-title"><i class="fa-solid fa-user-plus"></i><h2>أرشفة ملف جديد</h2></div>
+                <form id="citizenForm" onsubmit="addCitizen(event)">
+                    <div class="form-grid">
+                        <div class="input-group"><label>الاسم الكامل</label><input type="text" id="name"></div>
+                        <div class="input-group"><label>رقم الهوية (ID)</label><input type="number" id="citizenId"></div>
+                        <div class="input-group"><label>رقم الهاتف</label><input type="text" id="phone"></div>
+                        <div class="input-group">
+                            <label>الحالة الأمنية</label>
+                            <select id="status">
+                                <option value="clean">سليم / غير مطلوب</option>
+                                <option value="wanted">مطلوب أمنياً 🚨</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 20px;"><label>التهم / السجل والملخص الفيدرالي</label><textarea id="notes" rows="3"></textarea></div>
+                    <button type="submit" class="btn-submit"><i class="fa-solid fa-floppy-disk"></i> حفظ السجل فوراً</button>
+                </form>
+            </section>
+
+            <!-- لوحة تقديم الشكاوى للمواطنين (تظهر للمواطن فقط) -->
+            <section class="panel citizen-only" id="citizenPanel">
+                <div class="panel-title" style="color: var(--danger); border-bottom-color: var(--danger);">
+                    <i class="fa-solid fa-gavel"></i><h2>تقديم شكوى رسمية للأمانة العامة للـ FBI</h2>
+                </div>
+                <form id="complaintForm" onsubmit="addComplaint(event)">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>نوع الشكوى</label>
+                            <select id="complaintType" required>
+                                <option value="افراد">شكوى ضد فرد / ضابط معين</option>
+                                <option value="مسؤولين">شكوى ضد مسؤول / قيادي</option>
+                                <option value="قطاع">شكوى ضد قطاع كامل (مثال: الـ CID)</option>
+                            </select>
+                        </div>
+                        <div class="input-group"><label>الاسم المشكو ضده أو القطاع</label><input type="text" id="targetName" placeholder="اكتب الاسم أو رتبته أو القطاع..." required></div>
+                        <div class="input-group"><label>تاريخ وتوقيت الواقعة</label><input type="text" id="complaintTime" placeholder="مثال: اليوم بعد العشاء"></div>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 20px;">
+                        <label>تفاصيل الشكوى والانتهاكات بالكامل</label>
+                        <textarea id="complaintDetails" rows="4" placeholder="يرجى كتابة تفاصيل المشكلة، التعسف، أو الانتهاك الذي تعرضت له بكل وضوح..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit btn-submit-complaint"><i class="fa-solid fa-paper-plane"></i> إرسال الشكوى للمراجعة العُليا</button>
+                </form>
+            </section>
+
+            <!-- قاعدة البيانات المركزية / الشكاوى المرفوعة -->
+            <section class="panel">
+                <div class="panel-title" id="listTitle"><i class="fa-solid fa-users-viewfinder"></i><h2>قاعدة البيانات المركزية للتحري</h2></div>
+                <div class="search-bar" id="searchBarZone"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="searchInp" oninput="searchCitizen()" placeholder="البحث بالاسم أو الرقم الفيدرالي..."></div>
+                <div class="records-list" id="recordsList"></div>
+            </section>
+        </main>
+
+        <aside style="display: flex; flex-direction: column; gap: 30px;">
+            <section class="panel">
+                <div class="panel-title"><i class="fa-solid fa-brain"></i><h2>مساعد التخصيص والتحليل الفيدرالي AI</h2></div>
+                <div class="ai-terminal">
+                    <div class="ai-output" id="aiOutput">
+                        أهلاً معاليك، أنا وحدة الذكاء الاصطناعي التابعة للـ <b>FBI COMMANDER</b>.<br><br>
+                        يمكنك الحين إعطائي أوامر لتخصيص الواجهة بالكامل:<br>
+                        - <b>لتغيير الاسم:</b> (غير الاسم إلى: الاسم الجديد)
+                    </div>
+                    <div class="ai-input-zone">
+                        <input type="text" id="aiInput" placeholder="أعطِ أمراً للـ AI لتعديل الموقع...">
+                        <button class="btn-ai" onclick="askAI()"><i class="fa-solid fa-gears"></i></button>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+    </div>
+
+    <script>
+        let citizens = JSON.parse(localStorage.getItem('fbi_citizens')) || [
+            { id: "1001", name: "ديميتري بوبوف", phone: "555-9988", status: "wanted", notes: "تهريب أسلحة، رصد في ميناء المدينة." }
+        ];
+
+        let complaints = JSON.parse(localStorage.getItem('fbi_complaints')) || [];
+        let currentUserRole = "موظف"; 
+        let currentUserName = "";
+
+        const trustedManagers = ["erwin", "ايروين", "ايرون", "erwin smith", "ايروين سميث", "ايرون سمث"];
+
+        function toggleUnemployed(val) {
+            if(val === "عاطل") {
+                document.getElementById('loginJob').value = "لا يوجد (عاطل عن العمل)";
+                document.getElementById('loginJob').disabled = true;
+            } else {
+                document.getElementById('loginJob').value = "";
+                document.getElementById('loginJob').disabled = false;
+            }
+        }
+
+        function validateRequest() {
+            const name = document.getElementById('loginName').value.trim();
+            const job = document.getElementById('loginJob').value.trim();
+            const rank = document.getElementById('loginRank').value;
+            const manager = document.getElementById('loginManager').value.trim().toLowerCase();
+            const errorBox = document.getElementById('errorBox');
+
+            if(!name || !manager) {
+                alert("الرجاء إدخال اسمك واسم المسؤول للمطابقة!");
+                return;
+            }
+
+            if(trustedManagers.includes(manager)) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                currentUserRole = rank;
+                currentUserName = name;
+
+                if (rank === "عاطل") {
+                    // إعدادات واجهة المواطن الشاكي
+                    document.getElementById('navUserBadge').innerHTML = `<i class="fa-solid fa-user"></i> المواطن: ${name} (مُقدّم شكوى)`;
+                    document.getElementById('officerPanel').style.display = 'none';
+                    document.getElementById('citizenPanel').style.display = 'block';
+                    document.getElementById('listTitle').innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i><h2>سجل شكاواك السابقة المرفوعة للقيادة</h2>`;
+                    document.getElementById('searchBarZone').style.display = 'none';
+                    
+                    if ('speechSynthesis' in window) {
+                        let msg = new SpeechSynthesisUtterance(`مرحباً بك يا سيد ${name}. تم تفعيل بوابة الشكاوى الفيدرالية. يمكنك الحين رفع شكواك ضد الأفراد أو المسؤولين إلى القائد إيروين سميث مباشرة وبكل سرية.`);
+                        msg.lang = 'ar-SA';
+                        window.speechSynthesis.speak(msg);
+                    }
+                    renderComplaints();
+                } else {
+                    // إعدادات واجهة المحقق العسكري
+                    document.getElementById('navUserBadge').innerHTML = `<i class="fa-solid fa-user-shield"></i> المصرح: ${name} [${job}]`;
+                    document.getElementById('officerPanel').style.display = 'block';
+                    document.getElementById('citizenPanel').style.display = 'none';
+                    
+                    if ('speechSynthesis' in window) {
+                        let msg = new SpeechSynthesisUtterance(`أهلاً معاليك. تم التحقق من هويتك بنجاح تحت قيادة إيروين سميث. نظام إف بي آي كوماندور مفتوح لك بكامل الصلاحيات.`);
+                        msg.lang = 'ar-SA';
+                        window.speechSynthesis.speak(msg);
+                    }
+                    renderCitizens();
+                }
+            } else {
+                errorBox.style.display = 'block';
+                if ('speechSynthesis' in window) {
+                    let failMsg = new SpeechSynthesisUtterance("تم رفض التصريح. هذا المسؤول لا يملك صلاحية الوصول لقاعدة البيانات المركزية.");
+                    failMsg.lang = 'ar-SA';
+                    window.speechSynthesis.speak(failMsg);
+                }
+            }
+        }
+
+        // عرض السجلات للعساكر
+        function renderCitizens(data = citizens) {
+            const list = document.getElementById('recordsList');
+            list.innerHTML = '';
+            data.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'record-card';
+                card.innerHTML = `
+                    <div>
+                        <h3>${c.name} (ID: ${c.id})</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted)">الهاتف: ${c.phone} | التهم: ${c.notes}</p>
+                    </div>
+                    <span class="status-badge ${c.status === 'wanted' ? 'status-wanted' : 'status-clean'}">${c.status === 'wanted' ? 'مطلوب أمنياً 🚨' : 'سليم'}</span>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // عرض الشكاوى للمواطن (يعرض فقط الشكاوى الخاصة به لحفظ السرية)
+        function renderComplaints() {
+            const list = document.getElementById('recordsList');
+            list.innerHTML = '';
+            const myComplaints = complaints.filter(comp => comp.sender === currentUserName);
+            
+            if(myComplaints.length === 0) {
+                list.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-muted)">لا توجد شكاوى مقدمة باسمك حالياً.</p>`;
+                return;
+            }
+
+            myComplaints.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'record-card';
+                card.style.borderRight = "4px solid var(--danger)";
+                card.innerHTML = `
+                    <div>
+                        <h3>شكوى ضد: ${c.target} [نوع: الشكوى على ${c.type}]</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted)">التوقيت: ${c.time} | التفاصيل: ${c.details}</p>
+                    </div>
+                    <span class="status-badge status-pending">قيد المراجعة الفيدرالية ⚖️</span>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // إرسال شكوى جديدة من مواطن
+        function addComplaint(e) {
+            e.preventDefault();
+            const newComplaint = {
+                sender: currentUserName,
+                type: document.getElementById('complaintType').value,
+                target: document.getElementById('targetName').value,
+                time: document.getElementById('complaintTime').value || "غير محدد",
+                details: document.getElementById('complaintDetails').value
+            };
+            complaints.unshift(newComplaint);
+            localStorage.setItem('fbi_complaints', JSON.stringify(complaints));
+            renderComplaints();
+            document.getElementById('complaintForm').reset();
+            speakNotification("تم إرسال الشكوى بنجاح إلى الأرشيف السري للقائد إيروين.");
+            alert("تم إرسال شكواك بنجاح وبشكل سري وسيقوم مكتب القائد بمراجعتها!");
+        }
+
+        function addCitizen(e) {
+            e.preventDefault();
+            citizens.unshift({
+                id: document.getElementById('citizenId').value,
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                status: document.getElementById('status').value,
+                notes: document.getElementById('notes').value
+            });
+            localStorage.setItem('fbi_citizens', JSON.stringify(citizens));
+            renderCitizens();
+            document.getElementById('citizenForm').reset();
+            speakNotification("تم أرشفة القضية بالسجل العام.");
+        }
+
+        function searchCitizen() {
+            const term = document.getElementById('searchInp').value.toLowerCase();
+            const filtered = citizens.filter(c => c.name.toLowerCase().includes(term) || c.id.includes(term));
+            renderCitizens(filtered);
+        }
+
+        function askAI() {
+            const input = document.getElementById('aiInput').value;
+            const output = document.getElementById('aiOutput');
+            if(!input) return;
+
+            if(input.includes("الاسم") || input.includes("عنوان")) {
+                const newTitle = input.split("إلى:")[1] || input.split("إلى")[1];
+                if(newTitle) {
+                    document.getElementById('mainTitle').innerText = newTitle.trim().toUpperCase();
+                    output.innerHTML = `⚙️ <b>تعديل عبر الـ AI:</b> تم تعديل اسم الهيئة الفيدرالية إلى [ <b>${newTitle.trim()}</b> ].`;
+                    speakNotification("تم تعديل الاسم الرئيسي معاليك.");
+                }
+            } else if(input.includes("اللون") || input.includes("ألوان")) {
+                if(input.includes("ذهبي") || input.includes("اصفر")) {
+                    document.documentElement.style.setProperty('--neon-blue', '#d4af37');
+                    document.documentElement.style.setProperty('--accent-blue', '#aa7c11');
+                    output.innerHTML = "⚙️ <b>تعديل عبر الـ AI:</b> تم تفعيل اللون الذهبي الملكي للوكالة.";
+                } else if(input.includes("احمر")) {
+                    document.documentElement.style.setProperty('--neon-blue', '#ef4444');
+                    document.documentElement.style.setProperty('--accent-blue', '#991b1b');
+                    output.innerHTML = "⚙️ <b>تعديل عبر الـ AI:</b> تم تفعيل ثيم طوارئ الجنايات الأحمر.";
+                } else if(input.includes("ازرق")) {
+                    document.documentElement.style.setProperty('--neon-blue', '#3b82f6');
+                    document.documentElement.style.setProperty('--accent-blue', '#1e3a8a');
+                    output.innerHTML = "⚙️ <b>تعديل عبر ال-- AI:</b> تم التراجع للثيم الكحلي الافتراضي.";
+                }
+                speakNotification("تم تحديث ألوان الواجهة.");
+            } else {
+                output.innerHTML = "الـ AI لم يتعرف على الأمر. يمكنك كتابة: (غير الاسم إلى: الاسم الجديد) أو (غير اللون إلى: ذهبي).";
+            }
+            document.getElementById('aiInput').value = '';
+        }
+
+        function speakNotification(text) {
+            if ('speechSynthesis' in window) {
+                let msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'ar-SA';
+                window.speechSynthesis.speak(msg);
+            }
+        }
+    </script>
+</body>
+</html>
